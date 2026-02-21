@@ -351,6 +351,35 @@ async function initializeMap() {
         map.getSource('markers').setData(markers);
       };
 
+      const addCurrentLocationButton = document.getElementById('add-current-location-btn');
+      if (addCurrentLocationButton) {
+        addCurrentLocationButton.addEventListener('click', async (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+
+          const currentLocation = await getUserLocation();
+          if (currentLocation) {
+            map.flyTo({
+              center: currentLocation,
+              zoom: Math.max(map.getZoom(), 16),
+              duration: 600
+            });
+
+            await addMarkerAt({
+              lng: currentLocation[0],
+              lat: currentLocation[1]
+            });
+            return;
+          }
+
+          const center = map.getCenter();
+          await addMarkerAt({
+            lng: center.lng,
+            lat: center.lat
+          });
+        });
+      }
+
       const pointHasMarker = (point) => {
         const features = map.queryRenderedFeatures(point, { layers: ['marker-circles'] });
         return features.length > 0;
@@ -539,3 +568,19 @@ if (document.readyState === 'loading') {
 } else {
   initializeMap();
 }
+
+// Open sidebar when hamburger menu is clicked
+document.getElementById('menuBtn').addEventListener('click', function() {
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('open');
+});
+
+// Close sidebar when close button is clicked
+document.getElementById('closeSidebar').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.remove('open');
+});
+
+// Close sidebar when clicking on the map area
+document.getElementById('map').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.remove('open');
+});
