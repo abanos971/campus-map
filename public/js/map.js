@@ -103,16 +103,11 @@ async function initializeMap() {
     // Wait for map to load before adding sources and layers
     map.on('load', () => {
       const AMENITY_TYPES = [
-        'Restroom',
-        'Water Fountain',
-        'Study Space',
-        'Parking',
-        'Elevator',
-        'Stairs',
-        'Entrance',
-        'Food',
-        'Accessibility',
-        'Other'
+        'Gender-Inclusive Restroom', 'Compost Bin', 'Recycling Bin', 'Water Fountain',
+          'Handicapped Restroom', 'Elevator', 'Ramp',
+          'Quiet Study', 'Group Study',
+          'Prayer Room', 'Lactation Room', 'Wellness Room',
+          'Other'
       ];
       const TOUCH_TAP_TOLERANCE_PX = 10;
       let touchStartPoint = null;
