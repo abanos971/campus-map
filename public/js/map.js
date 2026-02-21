@@ -11,6 +11,23 @@ async function initializeMap() {
 
     mapboxgl.accessToken = config.mapboxToken;
 
+    const mapEl = document.getElementById("map"); // change if your div id is different
+    console.log("mapEl found?", !!mapEl);
+
+    ["pointerdown","touchstart","click"].forEach(evt => {
+      mapEl?.addEventListener(evt, (e) => {
+        console.log("MAP EVENT:", evt, {
+          x: e.clientX,
+          y: e.clientY,
+          target: e.target?.tagName,
+        });
+      }, { passive: false });
+    });
+
+    ["pointerdown","touchstart","click"].forEach(evt => {
+      window.addEventListener(evt, () => console.log("WINDOW EVENT:", evt), { passive: true });
+    });
+
     // Initialize the map
     const map = new mapboxgl.Map({
       container: 'map',
@@ -28,6 +45,110 @@ async function initializeMap() {
 
     // Wait for map to load before adding sources and layers
     map.on('load', () => {
+      const TOUCH_TAP_TOLERANCE_PX = 10;
+      let touchStartPoint = null;
+      let suppressNextClick = false;
+      let markerDialogOpen = false;
+
+      const openMarkerNameDialog = (initialValue = 'New Location') => {
+        if (markerDialogOpen) {
+          return Promise.resolve(null);
+        }
+
+        markerDialogOpen = true;
+
+        return new Promise((resolve) => {
+          const overlay = document.createElement('div');
+          overlay.className = 'marker-name-overlay';
+
+          const dialog = document.createElement('div');
+          dialog.className = 'marker-name-dialog';
+
+          const title = document.createElement('h2');
+          title.textContent = 'Name this location';
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = initialValue;
+          input.placeholder = 'Enter location name';
+          input.className = 'marker-name-input';
+          input.maxLength = 60;
+
+          const actions = document.createElement('div');
+          actions.className = 'marker-name-actions';
+
+          const cancelButton = document.createElement('button');
+          cancelButton.type = 'button';
+          cancelButton.className = 'marker-name-cancel';
+          cancelButton.textContent = 'Cancel';
+
+          const saveButton = document.createElement('button');
+          saveButton.type = 'button';
+          saveButton.className = 'marker-name-save';
+          saveButton.textContent = 'Save';
+
+          actions.appendChild(cancelButton);
+          actions.appendChild(saveButton);
+
+          dialog.appendChild(title);
+          dialog.appendChild(input);
+          dialog.appendChild(actions);
+          overlay.appendChild(dialog);
+          document.body.appendChild(overlay);
+
+          const closeDialog = (value) => {
+            overlay.remove();
+            markerDialogOpen = false;
+            resolve(value);
+          };
+
+          cancelButton.addEventListener('click', () => closeDialog(null));
+          saveButton.addEventListener('click', () => closeDialog(input.value.trim()));
+
+          overlay.addEventListener('click', (event) => {
+            if (event.target === overlay) {
+              closeDialog(null);
+            }
+          });
+
+          input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              closeDialog(input.value.trim());
+            } else if (event.key === 'Escape') {
+              event.preventDefault();
+              closeDialog(null);
+            }
+          });
+
+          window.setTimeout(() => input.focus(), 0);
+        });
+      };
+
+      const addMarkerAt = async (coordinates) => {
+        const markerText = await openMarkerNameDialog('New Location');
+        if (markerText === null) {
+          return;
+        }
+
+        // Add marker to GeoJSON
+        markers.features.push({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [coordinates.lng, coordinates.lat]
+          },
+          properties: {
+            title: markerText || 'Untitled',
+            id: Date.now() // Unique ID for the marker
+          }
+
+        });
+
+        // Update the data source
+        map.getSource('markers').setData(markers);
+      };
+
       // Add a source for the markers
       map.addSource('markers', {
         type: 'geojson',
@@ -68,30 +189,38 @@ async function initializeMap() {
 
       // Allow users to click on the map to add markers
       map.on('click', (e) => {
-        const coordinates = e.lngLat;
-        
-        // Prompt user for marker text
-        const markerText = prompt('Enter marker text:', 'New Location');
-        
-        if (markerText === null) {
-          return; // User cancelled
+        if (suppressNextClick) {
+          suppressNextClick = false;
+          return;
+        }
+        void addMarkerAt(e.lngLat);
+      });
+
+      // Touchscreens: add marker only for a tap (not for drag/pinch gestures).
+      map.on('touchstart', (e) => {
+        if (!e.point) {
+          touchStartPoint = null;
+          return;
+        }
+        touchStartPoint = { x: e.point.x, y: e.point.y };
+      });
+
+      map.on('touchend', (e) => {
+        if (!touchStartPoint || !e.point) {
+          touchStartPoint = null;
+          return;
         }
 
-        // Add marker to GeoJSON
-        markers.features.push({
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [coordinates.lng, coordinates.lat]
-          },
-          properties: {
-            title: markerText || 'Untitled',
-            id: Date.now() // Unique ID for the marker
-          }
-        });
+        const dx = e.point.x - touchStartPoint.x;
+        const dy = e.point.y - touchStartPoint.y;
+        const isTap = Math.hypot(dx, dy) <= TOUCH_TAP_TOLERANCE_PX;
 
-        // Update the data source
-        map.getSource('markers').setData(markers);
+        touchStartPoint = null;
+
+        if (isTap) {
+          suppressNextClick = true;
+          void addMarkerAt(e.lngLat);
+        }
       });
 
       // Show cursor change on marker hover
