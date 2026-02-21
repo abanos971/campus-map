@@ -151,8 +151,14 @@ async function initializeMap() {
           checkbox.value = amenityType;
           checkbox.checked = true;
 
+          // Set checkbox color based on amenity type
+          const color = AMENITY_COLORS[amenityType] || '#666666';
+          checkbox.style.accentColor = color;
+
           label.appendChild(checkbox);
           label.append(` ${amenityType}`);
+          // Style label text with amenity color
+          label.style.color = color;
           filterForm.appendChild(label);
         });
       };
@@ -430,7 +436,12 @@ async function initializeMap() {
         source: 'markers',
         paint: {
           'circle-radius': 12,
-          'circle-color': '#007bff',
+          'circle-color': [
+            'case',
+            ['has', ['get', 'amenityType'], ['literal', AMENITY_COLORS]],
+            ['get', ['get', 'amenityType'], ['literal', AMENITY_COLORS]],
+            '#666666'
+        ],
           'circle-opacity': 0.8,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#fff'
