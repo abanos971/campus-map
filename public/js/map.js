@@ -45,12 +45,33 @@ async function initializeMap() {
 
     // Wait for map to load before adding sources and layers
     map.on('load', () => {
+      const AMENITY_TYPES = [
+        'Restroom',
+        'Water Fountain',
+        'Elevator',
+        'Stairs',
+        'Entrance',
+        'Study Space',
+        'Food',
+        'Parking',
+        'Accessibility',
+        'Other'
+      ];
       const TOUCH_TAP_TOLERANCE_PX = 10;
       let touchStartPoint = null;
       let suppressNextClick = false;
       let markerDialogOpen = false;
 
-      const openMarkerNameDialog = (initialValue = 'New Location') => {
+      const escapeHtml = (value = '') => (
+        value
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;')
+      );
+
+      const openMarkerFormDialog = () => {
         if (markerDialogOpen) {
           return Promise.resolve(null);
         }
@@ -65,14 +86,61 @@ async function initializeMap() {
           dialog.className = 'marker-name-dialog';
 
           const title = document.createElement('h2');
-          title.textContent = 'Name this location';
+          title.textContent = 'Add Amenity';
 
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.value = initialValue;
-          input.placeholder = 'Enter location name';
-          input.className = 'marker-name-input';
-          input.maxLength = 60;
+          const amenityTypeLabel = document.createElement('label');
+          amenityTypeLabel.className = 'marker-name-label';
+          amenityTypeLabel.textContent = 'Amenity type';
+
+          const amenityTypeSelect = document.createElement('select');
+          amenityTypeSelect.className = 'marker-name-input';
+          AMENITY_TYPES.forEach((type) => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            amenityTypeSelect.appendChild(option);
+          });
+
+          const indoorOutdoorLabel = document.createElement('label');
+          indoorOutdoorLabel.className = 'marker-name-label';
+          indoorOutdoorLabel.textContent = 'Indoor / Outdoor';
+
+          const indoorOutdoorSelect = document.createElement('select');
+          indoorOutdoorSelect.className = 'marker-name-input';
+          [
+            { value: 'indoor', text: 'Indoor' },
+            { value: 'outdoor', text: 'Outdoor' }
+          ].forEach((entry) => {
+            const option = document.createElement('option');
+            option.value = entry.value;
+            option.textContent = entry.text;
+            indoorOutdoorSelect.appendChild(option);
+          });
+
+          const floorWrap = document.createElement('div');
+          floorWrap.className = 'marker-name-floor-wrap';
+
+          const floorLabel = document.createElement('label');
+          floorLabel.className = 'marker-name-label';
+          floorLabel.textContent = 'Floor / level';
+
+          const floorInput = document.createElement('input');
+          floorInput.type = 'text';
+          floorInput.className = 'marker-name-input';
+          floorInput.placeholder = 'e.g. Floor 2';
+          floorInput.maxLength = 30;
+
+          floorWrap.appendChild(floorLabel);
+          floorWrap.appendChild(floorInput);
+
+          const descriptionLabel = document.createElement('label');
+          descriptionLabel.className = 'marker-name-label';
+          descriptionLabel.textContent = 'Location description';
+
+          const descriptionInput = document.createElement('textarea');
+          descriptionInput.className = 'marker-name-input marker-name-textarea';
+          descriptionInput.placeholder = 'Describe where this is relative to nearby places';
+          descriptionInput.maxLength = 200;
 
           const actions = document.createElement('div');
           actions.className = 'marker-name-actions';
@@ -90,8 +158,22 @@ async function initializeMap() {
           actions.appendChild(cancelButton);
           actions.appendChild(saveButton);
 
+          const updateFloorVisibility = () => {
+            floorWrap.style.display = indoorOutdoorSelect.value === 'indoor' ? 'block' : 'none';
+          };
+
+          updateFloorVisibility();
+
+          indoorOutdoorSelect.addEventListener('change', updateFloorVisibility);
+
           dialog.appendChild(title);
-          dialog.appendChild(input);
+          dialog.appendChild(amenityTypeLabel);
+          dialog.appendChild(amenityTypeSelect);
+          dialog.appendChild(indoorOutdoorLabel);
+          dialog.appendChild(indoorOutdoorSelect);
+          dialog.appendChild(floorWrap);
+          dialog.appendChild(descriptionLabel);
+          dialog.appendChild(descriptionInput);
           dialog.appendChild(actions);
           overlay.appendChild(dialog);
           document.body.appendChild(overlay);
@@ -103,7 +185,12 @@ async function initializeMap() {
           };
 
           cancelButton.addEventListener('click', () => closeDialog(null));
-          saveButton.addEventListener('click', () => closeDialog(input.value.trim()));
+          saveButton.addEventListener('click', () => closeDialog({
+            amenityType: amenityTypeSelect.value,
+            indoorOutdoor: indoorOutdoorSelect.value,
+            floor: indoorOutdoorSelect.value === 'indoor' ? floorInput.value.trim() : '',
+            locationDescription: descriptionInput.value.trim()
+          }));
 
           overlay.addEventListener('click', (event) => {
             if (event.target === overlay) {
@@ -111,23 +198,28 @@ async function initializeMap() {
             }
           });
 
-          input.addEventListener('keydown', (event) => {
+          amenityTypeSelect.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
               event.preventDefault();
-              closeDialog(input.value.trim());
+              closeDialog({
+                amenityType: amenityTypeSelect.value,
+                indoorOutdoor: indoorOutdoorSelect.value,
+                floor: indoorOutdoorSelect.value === 'indoor' ? floorInput.value.trim() : '',
+                locationDescription: descriptionInput.value.trim()
+              });
             } else if (event.key === 'Escape') {
               event.preventDefault();
               closeDialog(null);
             }
           });
 
-          window.setTimeout(() => input.focus(), 0);
+          window.setTimeout(() => amenityTypeSelect.focus(), 0);
         });
       };
 
       const addMarkerAt = async (coordinates) => {
-        const markerText = await openMarkerNameDialog('New Location');
-        if (markerText === null) {
+        const markerData = await openMarkerFormDialog();
+        if (markerData === null) {
           return;
         }
 
@@ -139,7 +231,11 @@ async function initializeMap() {
             coordinates: [coordinates.lng, coordinates.lat]
           },
           properties: {
-            title: markerText || 'Untitled',
+            title: markerData.amenityType || 'Untitled',
+            amenityType: markerData.amenityType || 'Untitled',
+            indoorOutdoor: markerData.indoorOutdoor || 'outdoor',
+            floor: markerData.floor || '',
+            locationDescription: markerData.locationDescription || '',
             id: Date.now() // Unique ID for the marker
           }
 
@@ -147,6 +243,11 @@ async function initializeMap() {
 
         // Update the data source
         map.getSource('markers').setData(markers);
+      };
+
+      const pointHasMarker = (point) => {
+        const features = map.queryRenderedFeatures(point, { layers: ['marker-circles'] });
+        return features.length > 0;
       };
 
       // Add a source for the markers
@@ -189,6 +290,10 @@ async function initializeMap() {
 
       // Allow users to click on the map to add markers
       map.on('click', (e) => {
+        if (pointHasMarker(e.point)) {
+          return;
+        }
+
         if (suppressNextClick) {
           suppressNextClick = false;
           return;
@@ -218,6 +323,10 @@ async function initializeMap() {
         touchStartPoint = null;
 
         if (isTap) {
+          if (pointHasMarker(e.point)) {
+            return;
+          }
+
           suppressNextClick = true;
           void addMarkerAt(e.lngLat);
         }
@@ -230,6 +339,33 @@ async function initializeMap() {
 
       map.on('mouseleave', 'marker-circles', () => {
         map.getCanvas().style.cursor = '';
+      });
+
+      map.on('click', 'marker-circles', (e) => {
+        const feature = e.features && e.features[0];
+        if (!feature) {
+          return;
+        }
+
+        const properties = feature.properties || {};
+        const floorInfo = properties.indoorOutdoor === 'indoor'
+          ? `<div><strong>Floor:</strong> ${escapeHtml(properties.floor || 'Not specified')}</div>`
+          : '';
+        const descriptionInfo = properties.locationDescription
+          ? `<div><strong>Description:</strong> ${escapeHtml(properties.locationDescription)}</div>`
+          : '<div><strong>Description:</strong> Not provided</div>';
+
+        new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
+          .setLngLat(feature.geometry.coordinates)
+          .setHTML(
+            `<div class="marker-info-popup">` +
+            `<div><strong>Type:</strong> ${escapeHtml(properties.amenityType || 'Unknown')}</div>` +
+            `<div><strong>Area:</strong> ${escapeHtml(properties.indoorOutdoor || 'Unknown')}</div>` +
+            `${floorInfo}` +
+            `${descriptionInfo}` +
+            `</div>`
+          )
+          .addTo(map);
       });
     });
 

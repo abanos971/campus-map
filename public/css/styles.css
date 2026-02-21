@@ -42,12 +42,29 @@ body {
     margin-bottom: 12px;
 }
 
+.marker-name-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 10px 0 6px;
+    color: #111827;
+}
+
 .marker-name-input {
     width: 100%;
     border: 1px solid #d0d7de;
     border-radius: 8px;
     padding: 10px 12px;
     font-size: 16px;
+}
+
+.marker-name-floor-wrap {
+    display: block;
+}
+
+.marker-name-textarea {
+    min-height: 84px;
+    resize: vertical;
 }
 
 .marker-name-actions {
@@ -72,4 +89,12 @@ body {
 .marker-name-save {
     background: #1d4ed8;
     color: #ffffff;
+}
+
+.marker-info-popup {
+    min-width: 220px;
+    font-size: 13px;
+    line-height: 1.4;
+    display: grid;
+    gap: 6px;
 }
