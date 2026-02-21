@@ -1,6 +1,44 @@
 // Fetch Mapbox token from server
 async function initializeMap() {
   try {
+    const DEFAULT_CENTER = [-72.5314, 42.3866];
+    const DEFAULT_ZOOM = 15;
+    const RADIUS_MILES = 0.4;
+    const METERS_PER_MILE = 1609.344;
+    const RADIUS_METERS = RADIUS_MILES * METERS_PER_MILE;
+
+    const getUserLocation = () => new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve([position.coords.longitude, position.coords.latitude]);
+        },
+        () => resolve(null),
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    });
+
+    const getRadiusBounds = (centerLng, centerLat, radiusMeters) => {
+      const latRadians = (centerLat * Math.PI) / 180;
+      const metersPerDegreeLat = 111320;
+      const metersPerDegreeLng = 111320 * Math.cos(latRadians);
+      const lngOffset = radiusMeters / metersPerDegreeLng;
+      const latOffset = radiusMeters / metersPerDegreeLat;
+
+      return [
+        [centerLng - lngOffset, centerLat - latOffset],
+        [centerLng + lngOffset, centerLat + latOffset]
+      ];
+    };
+
     const response = await fetch('/api/config');
     const config = await response.json();
     
@@ -10,6 +48,8 @@ async function initializeMap() {
     }
 
     mapboxgl.accessToken = config.mapboxToken;
+    const userCenter = await getUserLocation();
+    const initialCenter = userCenter || DEFAULT_CENTER;
 
     const mapEl = document.getElementById("map"); // change if your div id is different
     console.log("mapEl found?", !!mapEl);
@@ -32,8 +72,8 @@ async function initializeMap() {
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-96.7265, 32.9757], // Default center (Dallas area)
-      zoom: 15,
+      center: initialCenter, // User location when available, otherwise default center.
+      zoom: DEFAULT_ZOOM,
       attributionControl: false // Hide attribution control
     });
 
@@ -70,6 +110,58 @@ async function initializeMap() {
           .replaceAll('"', '&quot;')
           .replaceAll("'", '&#39;')
       );
+
+      const filterForm = document.getElementById('amenity-filter-form');
+
+      const slugifyAmenity = (value) => (
+        value
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '_')
+          .replace(/^_|_$/g, '')
+      );
+
+      const buildAmenityFilterControls = () => {
+        if (!filterForm) {
+          return;
+        }
+
+        filterForm.innerHTML = '';
+
+        AMENITY_TYPES.forEach((amenityType) => {
+          const label = document.createElement('label');
+          label.setAttribute('data-amenity', slugifyAmenity(amenityType));
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.name = 'amenity-filter';
+          checkbox.value = amenityType;
+          checkbox.checked = true;
+
+          label.appendChild(checkbox);
+          label.append(` ${amenityType}`);
+          filterForm.appendChild(label);
+        });
+      };
+
+      const getSelectedAmenityTypes = () => {
+        if (!filterForm) {
+          return AMENITY_TYPES;
+        }
+
+        return Array.from(
+          filterForm.querySelectorAll('input[name="amenity-filter"]:checked')
+        ).map((checkbox) => checkbox.value);
+      };
+
+      const applyAmenityFilter = () => {
+        const selected = getSelectedAmenityTypes();
+        const filterExpression = selected.length > 0
+          ? ['in', ['get', 'amenityType'], ['literal', selected]]
+          : ['==', ['get', 'amenityType'], '__none__'];
+
+        map.setFilter('marker-circles', filterExpression);
+        map.setFilter('marker-text', filterExpression);
+      };
 
       const openMarkerFormDialog = () => {
         if (markerDialogOpen) {
@@ -256,6 +348,38 @@ async function initializeMap() {
         data: markers
       });
 
+      if (userCenter) {
+        map.addSource('user-location', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: userCenter
+            },
+            properties: {}
+          }
+        });
+
+        map.addLayer({
+          id: 'user-location-dot',
+          type: 'circle',
+          source: 'user-location',
+          paint: {
+            'circle-radius': 6,
+            'circle-color': '#1d4ed8',
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 2
+          }
+        });
+
+        map.fitBounds(getRadiusBounds(userCenter[0], userCenter[1], RADIUS_METERS), {
+          padding: 32,
+          maxZoom: 16,
+          duration: 0
+        });
+      }
+
       // Add a circle layer for the markers
       map.addLayer({
         id: 'marker-circles',
@@ -287,6 +411,24 @@ async function initializeMap() {
           'text-halo-width': 1
         }
       });
+
+      buildAmenityFilterControls();
+      applyAmenityFilter();
+
+      if (filterForm) {
+        filterForm.addEventListener('change', (event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLInputElement)) {
+            return;
+          }
+
+          if (target.name !== 'amenity-filter') {
+            return;
+          }
+
+          applyAmenityFilter();
+        });
+      }
 
       // Allow users to click on the map to add markers
       map.on('click', (e) => {

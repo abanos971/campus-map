@@ -175,3 +175,113 @@ label[data-amenity="study_spot"] input[type="checkbox"] {
 label[data-amenity="bubbler"] input[type="checkbox"] {
   accent-color: #0097a7;
 }
+
+/* Marker form modal */
+.marker-name-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(16, 24, 40, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.marker-name-dialog {
+  width: min(520px, 100%);
+  max-height: min(80vh, 680px);
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+  border: 1px solid #e5e7eb;
+}
+
+.marker-name-dialog h2 {
+  margin: 2px 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.marker-name-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin: 12px 0 6px;
+}
+
+.marker-name-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+  color: #111827;
+  background: #ffffff;
+}
+
+.marker-name-input:focus {
+  outline: 2px solid #93c5fd;
+  border-color: #3b82f6;
+}
+
+.marker-name-floor-wrap {
+  display: block;
+}
+
+.marker-name-textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.marker-name-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.marker-name-actions button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.marker-name-cancel {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.marker-name-save {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.marker-info-popup {
+  min-width: 220px;
+  font-size: 13px;
+  line-height: 1.45;
+  display: grid;
+  gap: 6px;
+}
+
+@media (max-width: 640px) {
+  .marker-name-overlay {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .marker-name-dialog {
+    width: 100%;
+    max-height: 86vh;
+    border-radius: 14px 14px 10px 10px;
+  }
+}
