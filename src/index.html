@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Amenities Map Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Sidebar (hidden by default) -->
+  <aside id="sidebar" class="sidebar">
+    <button id="closeSidebar" class="close-btn" title="Close">&times;</button>
+    <div class="sidebar-content">
+      <h2>Select Amenity Categories</h2>
+      <form>
+        <label data-amenity="compost_bin"><input type="checkbox" value="compost_bin" checked> Compost Bins</label>
+        <label data-amenity="bathroom"><input type="checkbox" value="bathroom" checked> Gender-Inclusive Bathrooms</label>
+        <label data-amenity="prayer_room"><input type="checkbox" value="prayer_room" checked> Prayer Rooms</label>
+        <label data-amenity="lactation_room"><input type="checkbox" value="lactation_room" checked> Lactation Rooms</label>
+        <label data-amenity="study_spot"><input type="checkbox" value="study_spot" checked> Study Spots</label>
+        <label data-amenity="bubbler"><input type="checkbox" value="bubbler" checked> Bubblers</label>
+      </form>
+    </div>
+  </aside>
+
+  <!-- Hamburger button -->
+  <button id="menuBtn" class="menu-btn" title="Menu">&#9776;</button>
+
+  <!-- Map container -->
+  <main id="map" class="map-container">
+    <div class="map-placeholder">
+      <p>[Map Placeholder - Add your map library here]</p>
+    </div>
+  </main>
+  <script src="appUI.js"></script>
+</body>
+</html>
