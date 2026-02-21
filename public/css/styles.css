@@ -127,13 +127,13 @@ body {
 
 /* Sidebar Content */
 .sidebar-content {
-  padding: 60px 20px 30px 20px;
+  padding: 80px 20px 10px 20px;
 }
 
 .sidebar-content h2 {
   font-size: 18px;
   color: #333;
-  margin-bottom: 24px;
+  margin-bottom: 10px;
   font-weight: 600;
 }
 

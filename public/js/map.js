@@ -102,12 +102,12 @@ async function initializeMap() {
       const AMENITY_TYPES = [
         'Restroom',
         'Water Fountain',
+        'Study Space',
+        'Parking',
         'Elevator',
         'Stairs',
         'Entrance',
-        'Study Space',
         'Food',
-        'Parking',
         'Accessibility',
         'Other'
       ];
@@ -141,6 +141,25 @@ async function initializeMap() {
 
         filterForm.innerHTML = '';
 
+        // Add "Select All" checkbox
+        const selectAllLabel = document.createElement('label');
+        selectAllLabel.className = 'select-all-label';
+        selectAllLabel.style.marginBottom = '12px';
+        selectAllLabel.style.paddingBottom = '12px';
+        selectAllLabel.style.borderBottom = '1px solid #ddd';
+        selectAllLabel.style.fontWeight = 'bold';
+
+        const selectAllCheckbox = document.createElement('input');
+        selectAllCheckbox.type = 'checkbox';
+        selectAllCheckbox.id = 'select-all-amenities';
+        selectAllCheckbox.name = 'select-all';
+        selectAllCheckbox.checked = true;
+
+        selectAllLabel.appendChild(selectAllCheckbox);
+        selectAllLabel.append(' Select All');
+        filterForm.appendChild(selectAllLabel);
+
+        // Add individual amenity checkboxes
         AMENITY_TYPES.forEach((amenityType) => {
           const label = document.createElement('label');
           label.setAttribute('data-amenity', slugifyAmenity(amenityType));
@@ -160,6 +179,15 @@ async function initializeMap() {
           // Style label text with amenity color
           label.style.color = color;
           filterForm.appendChild(label);
+        });
+
+        // Handle select all checkbox
+        selectAllCheckbox.addEventListener('change', (event) => {
+          const isChecked = event.target.checked;
+          filterForm.querySelectorAll('input[name="amenity-filter"]').forEach((checkbox) => {
+            checkbox.checked = isChecked;
+          });
+          applyAmenityFilter();
         });
       };
 
@@ -181,6 +209,13 @@ async function initializeMap() {
 
         map.setFilter('marker-circles', filterExpression);
         map.setFilter('marker-text', filterExpression);
+
+        // Update select all checkbox state
+        const selectAllCheckbox = document.getElementById('select-all-amenities');
+        if (selectAllCheckbox) {
+          const totalAmenities = filterForm.querySelectorAll('input[name="amenity-filter"]').length;
+          selectAllCheckbox.checked = selected.length === totalAmenities;
+        }
       };
 
       const openMarkerFormDialog = () => {
@@ -441,7 +476,7 @@ async function initializeMap() {
             ['has', ['get', 'amenityType'], ['literal', AMENITY_COLORS]],
             ['get', ['get', 'amenityType'], ['literal', AMENITY_COLORS]],
             '#666666'
-        ],
+          ],
           'circle-opacity': 0.8,
           'circle-stroke-width': 2,
           'circle-stroke-color': '#fff'
@@ -476,11 +511,9 @@ async function initializeMap() {
             return;
           }
 
-          if (target.name !== 'amenity-filter') {
-            return;
+          if (target.name === 'amenity-filter') {
+            applyAmenityFilter();
           }
-
-          applyAmenityFilter();
         });
       }
 
