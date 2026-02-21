@@ -1,6 +1,7 @@
 // Open sidebar when hamburger menu is clicked
 document.getElementById('menuBtn').addEventListener('click', function() {
-  document.getElementById('sidebar').classList.add('open');
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('open');
 });
 
 // Close sidebar when close button is clicked

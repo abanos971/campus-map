@@ -1,100 +1,177 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    height: 100vh;
-    overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f5f5;
+  overflow: hidden;
+  display: flex;
 }
 
+/* Map Container - Takes up full screen */
 #map {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100%;
-    touch-action: manipulation;
+  width: 100%;
+  height: 100vh;
+  background: #e0e0e0;
+  position: relative;
+  flex: 1;
 }
 
-.marker-name-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    z-index: 9999;
+/* Hamburger Menu Button */
+.menu-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1200;
+  background: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 28px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  line-height: 1;
 }
 
-.marker-name-dialog {
-    width: min(420px, 100%);
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+.menu-btn:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.marker-name-dialog h2 {
-    font-size: 18px;
-    margin-bottom: 12px;
+.menu-btn:active {
+  transform: scale(0.95);
 }
 
-.marker-name-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    margin: 10px 0 6px;
-    color: #111827;
+/* Sidebar Styles */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+  transform: translateX(-100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1100;
+  overflow-y: auto;
 }
 
-.marker-name-input {
-    width: 100%;
-    border: 1px solid #d0d7de;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 16px;
+.sidebar.open {
+  transform: translateX(0);
 }
 
-.marker-name-floor-wrap {
-    display: block;
+/* Close Button */
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #333;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
 }
 
-.marker-name-textarea {
-    min-height: 84px;
-    resize: vertical;
+.close-btn:hover {
+  background-color: #f5f5f5;
 }
 
-.marker-name-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 14px;
+/* Sidebar Content */
+.sidebar-content {
+  padding: 60px 20px 30px 20px;
 }
 
-.marker-name-actions button {
-    border: none;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 14px;
+.sidebar-content h2 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 24px;
+  font-weight: 600;
 }
 
-.marker-name-cancel {
-    background: #e5e7eb;
-    color: #111827;
+.sidebar-content label {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  cursor: pointer;
+  font-size: 15px;
+  color: #333;
+  transition: color 0.2s ease;
 }
 
-.marker-name-save {
-    background: #1d4ed8;
-    color: #ffffff;
+.sidebar-content label:hover {
+  color: #667eea;
 }
 
-.marker-info-popup {
-    min-width: 220px;
-    font-size: 13px;
-    line-height: 1.4;
-    display: grid;
-    gap: 6px;
+.sidebar-content input[type="checkbox"] {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Color-coded labels by amenity type */
+label[data-amenity="compost_bin"] {
+  color: #8d6e63;
+}
+
+label[data-amenity="bathroom"] {
+  color: #f57c00;
+}
+
+label[data-amenity="prayer_room"] {
+  color: #c2185b;
+}
+
+label[data-amenity="lactation_room"] {
+  color: #00796b;
+}
+
+label[data-amenity="study_spot"] {
+  color: #1976d2;
+}
+
+label[data-amenity="bubbler"] {
+  color: #0097a7;
+}
+
+/* Color-coded checkboxes */
+label[data-amenity="compost_bin"] input[type="checkbox"] {
+  accent-color: #8d6e63;
+}
+
+label[data-amenity="bathroom"] input[type="checkbox"] {
+  accent-color: #f57c00;
+}
+
+label[data-amenity="prayer_room"] input[type="checkbox"] {
+  accent-color: #c2185b;
+}
+
+label[data-amenity="lactation_room"] input[type="checkbox"] {
+  accent-color: #00796b;
+}
+
+label[data-amenity="study_spot"] input[type="checkbox"] {
+  accent-color: #1976d2;
+}
+
+label[data-amenity="bubbler"] input[type="checkbox"] {
+  accent-color: #0097a7;
 }
