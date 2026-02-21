@@ -1,3 +1,17 @@
+// Define color mapping for amenity types
+const AMENITY_COLORS = {
+  'Restroom': '#f57c00',
+  'Water Fountain': '#0097a7',
+  'Elevator': '#1976d2',
+  'Stairs': '#8d6e63',
+  'Entrance': '#7b1fa2',
+  'Study Space': '#1976d2',
+  'Food': '#c2185b',
+  'Parking': '#00796b',
+  'Accessibility': '#388e3c',
+  'Other': '#666666'
+};
+
 // Fetch Mapbox token from server
 async function initializeMap() {
   try {
