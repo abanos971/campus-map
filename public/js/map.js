@@ -1,14 +1,17 @@
 // Define color mapping for amenity types
 const AMENITY_COLORS = {
-  'Restroom': '#f57c00',
-  'Water Fountain': '#0097a7',
-  'Elevator': '#1976d2',
-  'Stairs': '#8d6e63',
-  'Entrance': '#7b1fa2',
-  'Study Space': '#1976d2',
-  'Food': '#c2185b',
-  'Parking': '#00796b',
-  'Accessibility': '#388e3c',
+  'Gender-Inclusive Restroom': '#f57c00',
+  'Compost Bin': '#1aa105',
+  'Recyling Bin': '#0931e3',
+  'Water Fountain': '#2ac6ff',
+  'Handicapped Restroom': '#f57c00',
+  'Elevator': '#6d6b76',
+  'Ramp': '#8d6e63',
+  'Quiet Study': '#1976d2',
+  'Group Study': '#6d6b76',
+  'Prayer Room': '#6d6b76',
+  'Lactation Room': '#6d6b76',
+  'Wellness Room': '#6d6b76',
   'Other': '#666666'
 };
 
@@ -141,6 +144,30 @@ async function initializeMap() {
 
         filterForm.innerHTML = '';
 
+        // Define amenity groupings
+        const amenityGroups = {
+          'Facilities': ['Gender-Inclusive Restroom', 'Compost Bin', 'Recycling Bin', 'Water Fountain'],
+          'Accessibility': ['Handicapped Restroom', 'Elevator', 'Ramp'],
+          'Study Space': ['Quiet Study', 'Group Study'],
+          'Rooms': ['Prayer Room', 'Lactation Room', 'Wellness Room'],
+          'Other': ['Other']
+        };
+
+        // Count amenities by type
+        const amenityTypeCounts = {};
+        AMENITY_TYPES.forEach((type) => {
+          amenityTypeCounts[type] = 0;
+        });
+        
+        markers.features.forEach((feature) => {
+          if (feature.properties && feature.properties.amenityType) {
+            const type = feature.properties.amenityType;
+            if (amenityTypeCounts.hasOwnProperty(type)) {
+              amenityTypeCounts[type]++;
+            }
+          }
+        });
+
         // Add "Select All" checkbox
         const selectAllLabel = document.createElement('label');
         selectAllLabel.className = 'select-all-label';
@@ -159,26 +186,53 @@ async function initializeMap() {
         selectAllLabel.append(' Select All');
         filterForm.appendChild(selectAllLabel);
 
-        // Add individual amenity checkboxes
-        AMENITY_TYPES.forEach((amenityType) => {
-          const label = document.createElement('label');
-          label.setAttribute('data-amenity', slugifyAmenity(amenityType));
+        // Add grouped amenities
+        Object.entries(amenityGroups).forEach(([groupName, amenities], index) => {
+          // Add group header
+          const groupHeader = document.createElement('div');
+          groupHeader.style.marginTop = '16px';
+          groupHeader.style.marginBottom = '8px';
+          groupHeader.style.fontWeight = '600';
+          groupHeader.style.fontSize = '14px';
+          groupHeader.style.color = '#333';
+          groupHeader.textContent = groupName;
+          filterForm.appendChild(groupHeader);
 
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.name = 'amenity-filter';
-          checkbox.value = amenityType;
-          checkbox.checked = true;
+          // Add amenities in this group
+          amenities.forEach((amenityType) => {
+            const label = document.createElement('label');
+            label.setAttribute('data-amenity', slugifyAmenity(amenityType));
+            label.style.marginLeft = '12px'; // Indent subcategories
 
-          // Set checkbox color based on amenity type
-          const color = AMENITY_COLORS[amenityType] || '#666666';
-          checkbox.style.accentColor = color;
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'amenity-filter';
+            checkbox.value = amenityType;
+            checkbox.checked = true;
 
-          label.appendChild(checkbox);
-          label.append(` ${amenityType}`);
-          // Style label text with amenity color
-          label.style.color = color;
-          filterForm.appendChild(label);
+            // Set checkbox color based on amenity type
+            const color = AMENITY_COLORS[amenityType] || '#666666';
+            checkbox.style.accentColor = color;
+
+            label.appendChild(checkbox);
+            
+            // Add amenity type with count
+            const count = amenityTypeCounts[amenityType] || 0;
+            label.append(` ${amenityType} (${count})`);
+            
+            // Style label text with amenity color
+            label.style.color = color;
+            filterForm.appendChild(label);
+          });
+
+          // Add separator line between groups (except after the last group)
+          if (index < Object.keys(amenityGroups).length - 1) {
+            const separator = document.createElement('div');
+            separator.style.borderBottom = '1px solid #ddd';
+            separator.style.marginTop = '12px';
+            separator.style.marginBottom = '0px';
+            filterForm.appendChild(separator);
+          }
         });
 
         // Handle select all checkbox
@@ -390,6 +444,10 @@ async function initializeMap() {
 
         // Update the data source
         map.getSource('markers').setData(markers);
+
+        // Rebuild filter controls to update counts
+        buildAmenityFilterControls();
+        applyAmenityFilter();
       };
 
       const addCurrentLocationButton = document.getElementById('add-current-location-btn');
