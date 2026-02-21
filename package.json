@@ -2,15 +2,16 @@
   "name": "campus-map",
   "version": "1.0.0",
   "description": "Campus map application",
-  "main": "src/index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "echo 'Development mode'"
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.22.1"
   },
   "keywords": [],
   "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "express": "^5.2.1"
-  }
+  "license": "MIT"
 }
