@@ -2,10 +2,9 @@
   "name": "campus-map",
   "version": "1.0.0",
   "description": "Campus map application",
-  "main": "src/index.js",
+  "main": "map.html",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "echo 'Development mode'"
+    "dev": "npx http-server -p 3000 -o map.html"
   },
   "keywords": [],
   "author": "",
