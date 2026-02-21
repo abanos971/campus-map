@@ -44,7 +44,7 @@ async function initializeMap() {
     };
 
     // Wait for map to load before adding sources and layers
-    map.on('load', () => {
+    map.on('load', async () => {
       const TOUCH_TAP_TOLERANCE_PX = 10;
       let touchStartPoint = null;
       let suppressNextClick = false;
@@ -128,26 +128,45 @@ async function initializeMap() {
       const addMarkerAt = async (coordinates) => {
         const markerText = await openMarkerNameDialog('New Location');
         if (markerText === null) {
-          return;
+          return; // user cancelled
         }
 
-        // Add marker to GeoJSON
-        markers.features.push({
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [coordinates.lng, coordinates.lat]
-          },
-          properties: {
-            title: markerText || 'Untitled',
-            id: Date.now() // Unique ID for the marker
-          }
+        try {
+          // Send marker to backend
+          const res = await fetch('/markers', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name: markerText,
+              lat: coordinates.lat,
+              lng: coordinates.lng
+            })
+          });
 
-        });
+          const savedMarker = await res.json();
 
-        // Update the data source
-        map.getSource('markers').setData(markers);
+          // Add marker to frontend map after DB save
+          markers.features.push({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [coordinates.lng, coordinates.lat]
+            },
+            properties: {
+              title: markerText,
+              id: savedMarker.insertedId || Date.now()
+            }
+          });
+
+          map.getSource('markers').setData(markers);
+
+        } catch (err) {
+          console.error('Error saving marker:', err);
+        }
       };
+      
 
       // Add a source for the markers
       map.addSource('markers', {
@@ -185,6 +204,31 @@ async function initializeMap() {
           'text-halo-color': '#fff',
           'text-halo-width': 1
         }
+      });
+
+      try {
+        const res = await fetch('/markers');
+        const savedMarkers = await res.json();
+        savedMarkers.forEach(marker => {
+          markers.features.push({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [marker.lng, marker.lat] },
+            properties: { title: marker.name, id: marker._id }
+          });
+        });
+        map.getSource('markers').setData(markers);
+      } catch (err) {
+        console.error('Failed to load markers from DB:', err);
+      }
+      // <-- END DROP
+
+      // Allow users to click on the map to add markers
+      map.on('click', (e) => {
+        if (suppressNextClick) {
+          suppressNextClick = false;
+          return;
+        }
+        void addMarkerAt(e.lngLat);
       });
 
       // Allow users to click on the map to add markers
