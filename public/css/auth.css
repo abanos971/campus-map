@@ -61,3 +61,29 @@ button[type="submit"] {
   margin-top: 10px;
   color: red;
 }
+
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 2000;
+
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+
+  background: maroon;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  background: #5a0000;
+}

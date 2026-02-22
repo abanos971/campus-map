@@ -74,3 +74,11 @@ signupForm.addEventListener("submit", async (e) => {
     message.textContent = err.message;
   }
 });
+
+const backBtn = document.getElementById("backBtn");
+
+if (backBtn) {
+  backBtn.addEventListener("click", () => {
+    window.location.href = "/";
+  });
+}
