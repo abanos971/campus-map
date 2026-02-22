@@ -38,7 +38,7 @@ body {
   padding: 8px 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 14px #880000;
   line-height: 1;
   color: #ffffff;
 }
@@ -70,13 +70,13 @@ body {
   font-weight: 500;
   cursor: pointer;
   z-index: 1200;
-  box-shadow: 0 10px 22px #640101;
+  box-shadow: 0 6px 14px #640101;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .add-location-btn:hover {
   background: #880000;
-  box-shadow: 0 12px 24px #640101;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .add-location-btn:active {
@@ -297,11 +297,45 @@ body {
 }
 
 .login-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px #880000;
+  /* transform: translateY(-2px); */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .login-btn:active {
   transform: translateY(0);
   box-shadow: 0 4px 12px #880000;
+}
+
+/* Shared Back Button Style (used on auth + accounts pages) */
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 2000;
+
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+
+  background: maroon;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+
+  cursor: pointer;
+
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  transition: all 0.25s ease;
+}
+
+.back-btn:hover {
+  transform: translateY(-2px);
+  background: #5a0000;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.35);
+}
+
+.back-btn:active {
+  transform: translateY(0);
 }
