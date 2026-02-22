@@ -1,9 +1,9 @@
-// Send to accounts page if signed-in
-const token = localStorage.getItem("token");
+// // Send to accounts page if signed-in
+// const token = localStorage.getItem("token");
 
-if (!token) {
-  window.location.href = "/accounts.html";
-}
+// if (token) {
+//   window.location.href = "/accounts.html";
+// }
 
 const loginTab = document.getElementById("loginTab");
 const signupTab = document.getElementById("signupTab");
