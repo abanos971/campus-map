@@ -31,7 +31,7 @@ body {
   top: 16px;
   left: 16px;
   z-index: 1200;
-  background: #880000;
+  background: linear-gradient(135deg, #a90000, #880000);
   border: none;
   border-radius: 6px;
   font-size: 28px;
@@ -63,7 +63,7 @@ body {
   padding: 0;
   border: none;
   border-radius: 999px;
-  background: #880000;
+  background: linear-gradient(135deg, #a90000, #880000);
   color: #ffffff;
   font-size: 38px;
   line-height: 0.9;
@@ -75,7 +75,6 @@ body {
 }
 
 .add-location-btn:hover {
-  background: #880000;
   box-shadow: 0 2px 2px #640101;
 }
 

@@ -715,7 +715,7 @@ async function initializeMap() {
         <div><strong>Floor:</strong> ${escapeHtml(feature.properties.floor || 'Not specified')}</div>
         <div><strong>Description:</strong> ${escapeHtml(feature.properties.locationDescription || 'Not provided')}</div>
         <div class="marker-vote-row">
-          <button class="upvote-btn" aria-label="Upvote marker">⬆️ <span class="upvote-count">${Number(feature.properties.upvotes) || 0}</span></button>
+          <button class="upvote-btn" aria-label="Upvote marker">👍 <span class="upvote-count">${Number(feature.properties.upvotes) || 0}</span></button>
         </div>
         <div class="marker-popup-actions">
           <button class="delete-btn">Delete</button>
