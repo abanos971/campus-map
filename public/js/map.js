@@ -681,3 +681,24 @@ document.getElementById('closeSidebar').addEventListener('click', function() {
 document.getElementById('map').addEventListener('click', function() {
   document.getElementById('sidebar').classList.remove('open');
 });
+
+// Login / Logout button behavior
+const loginBtn = document.getElementById("loginBtn");
+
+if (loginBtn) {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    loginBtn.textContent = "Logout";
+
+    loginBtn.addEventListener("click", () => {
+      localStorage.removeItem("token");
+      location.reload();
+    });
+
+  } else {
+    loginBtn.addEventListener("click", () => {
+      window.location.href = "/auth.html";
+    });
+  }
+}
