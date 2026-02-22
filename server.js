@@ -13,7 +13,7 @@ const MONGO_URI = process.env.MONGO_URI;
 const DB_NAME = process.env.DB_NAME || 'campusmap';
 
 if (!MONGO_URI) {
-  console.error('MONGO_URI not set in .env — add MONGO_URI and restart');
+  console.error('MONGO_URI not set in .env, add MONGO_URI and restart');
   process.exit(1);
 }
 

@@ -481,7 +481,7 @@ async function initializeMap() {
               locationDescription: savedMarker.locationDescription || '',
               upvotes: Number(savedMarker.upvotes) || 0,
               upvotedByUserIds: Array.isArray(savedMarker.upvotedByUserIds) ? savedMarker.upvotedByUserIds : [],
-              _id: savedMarker._id // 🔑 Must match Mongo _id
+              _id: savedMarker._id // Must match Mongo _id
             }
           });
 

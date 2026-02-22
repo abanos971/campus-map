@@ -6,7 +6,7 @@ async function testConnection() {
 
   try {
     await client.connect();
-    console.log("✅ Connected to MongoDB Atlas!");
+    console.log("Connected to MongoDB Atlas!");
 
     const db = client.db('campusmap'); // your database
     const collections = await db.collections();
