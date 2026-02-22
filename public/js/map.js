@@ -5,13 +5,13 @@ const AMENITY_COLORS = {
   'Recyling Bin': '#0931e3',
   'Water Fountain': '#2ac6ff',
   'Handicapped Restroom': '#f57c00',
-  'Elevator': '#6d6b76',
-  'Ramp': '#8d6e63',
-  'Quiet Study': '#1976d2',
-  'Group Study': '#6d6b76',
-  'Prayer Room': '#6d6b76',
-  'Lactation Room': '#6d6b76',
-  'Wellness Room': '#6d6b76',
+  'Elevator': '#ae00ff',
+  'Ramp': '#f200ff',
+  'Quiet Study': '#ff0000',
+  'Group Study': '#a20000',
+  'Prayer Room': '#ff00a6',
+  'Lactation Room': '#ff007b',
+  'Wellness Room': '#9dff00',
   'Other': '#666666'
 };
 
