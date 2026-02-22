@@ -417,7 +417,6 @@ async function initializeMap() {
         const markerData = await openMarkerFormDialog();
         if (!markerData) return;
 
-        // include the coordinates in the marker data
         const payload = {
           ...markerData,
           lng: coordinates.lng,
@@ -431,22 +430,23 @@ async function initializeMap() {
             body: JSON.stringify(payload)
           });
 
-          const savedMarker = await res.json();
+          const savedMarker = await res.json(); // POST returns {_id: "...", ...}
 
-          // Add marker to frontend map
+          // Add marker to frontend map using correct _id
           markers.features.push({
             type: 'Feature',
             geometry: { type: 'Point', coordinates: [coordinates.lng, coordinates.lat] },
             properties: {
-              title: markerData.amenityType || 'Untitled',
-              amenityType: markerData.amenityType || 'Untitled',
-              indoorOutdoor: markerData.indoorOutdoor || 'outdoor',
-              floor: markerData.floor || '',
-              locationDescription: markerData.locationDescription || '',
-              _id: savedMarker.insertedId
+              title: savedMarker.amenityType || 'Untitled',
+              amenityType: savedMarker.amenityType || 'Untitled',
+              indoorOutdoor: savedMarker.indoorOutdoor || 'outdoor',
+              floor: savedMarker.floor || '',
+              locationDescription: savedMarker.locationDescription || '',
+              _id: savedMarker._id // 🔑 Must match Mongo _id
             }
           });
 
+          // Update the Mapbox source
           map.getSource('markers').setData(markers);
 
           // Update filter controls
@@ -456,34 +456,6 @@ async function initializeMap() {
         } catch (err) {
           console.error('Failed to save marker:', err);
         }
-<<<<<<< HEAD
-
-        // Add marker to GeoJSON
-        markers.features.push({
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [coordinates.lng, coordinates.lat]
-          },
-          properties: {
-            title: markerData.amenityType || 'Untitled',
-            amenityType: markerData.amenityType || 'Untitled',
-            indoorOutdoor: markerData.indoorOutdoor || 'Outdoor',
-            floor: markerData.floor || '',
-            locationDescription: markerData.locationDescription || '',
-            id: Date.now() // Unique ID for the marker
-          }
-
-        });
-
-        // Update the data source
-        map.getSource('markers').setData(markers);
-
-        // Rebuild filter controls to update counts
-        buildAmenityFilterControls();
-        applyAmenityFilter();
-=======
->>>>>>> alex/map
       };
 
       const addCurrentLocationButton = document.getElementById('add-current-location-btn');
@@ -689,86 +661,58 @@ async function initializeMap() {
       });
 
       map.on('click', 'marker-circles', (e) => {
-        const feature = e.features && e.features[0];
-        if (!feature) {
-          return;
-        }
+        const feature = e.features[0];
+        if (!feature) return;
 
-        const properties = feature.properties || {};
-        const floorInfo = properties.indoorOutdoor === 'Indoor'
-          ? `<div><strong>Floor:</strong> ${escapeHtml(properties.floor || 'Not specified')}</div>`
-          : '';
-        const descriptionInfo = properties.locationDescription
-          ? `<div><strong>Description:</strong> ${escapeHtml(properties.locationDescription)}</div>`
-          : '<div><strong>Description:</strong> Not provided</div>';
-
-        const markerId = properties._id;
-
-        const popup = new mapboxgl.Popup({
-          closeButton: true,
-          closeOnClick: true
-        })
+        // Create the popup
+        const popup = new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
           .setLngLat(feature.geometry.coordinates)
-          .setHTML(
-            `<div class="marker-info-popup">
-      <div><strong>Type:</strong> ${escapeHtml(properties.amenityType || 'Unknown')}</div>
-      <div><strong>Area:</strong> ${escapeHtml(properties.indoorOutdoor || 'Unknown')}</div>
-      ${floorInfo}
-      ${descriptionInfo}
-      <br>
-      <button class="delete-btn">Delete</button>
-    </div>`
-          )
+          .setHTML(`
+      <div class="marker-info-popup">
+        <div><strong>Type:</strong> ${escapeHtml(feature.properties.amenityType)}</div>
+        <div><strong>Area:</strong> ${escapeHtml(feature.properties.indoorOutdoor)}</div>
+        <div><strong>Floor:</strong> ${escapeHtml(feature.properties.floor || 'Not specified')}</div>
+        <div><strong>Description:</strong> ${escapeHtml(feature.properties.locationDescription || 'Not provided')}</div>
+        <br>
+        <button class="delete-btn">Delete</button>
+      </div>
+    `)
           .addTo(map);
 
-        // 🔥 Attach listener AFTER popup is added
+        // Attach delete button listener
         setTimeout(() => {
-          const popupElement = popup.getElement();
-          const deleteBtn = popupElement.querySelector('.delete-btn');
+          const deleteBtn = popup.getElement().querySelector('.delete-btn');
+          if (!deleteBtn) return;
 
-          if (!deleteBtn) {
-            console.log("Delete button not found");
-            return;
-          }
+          deleteBtn.addEventListener('click', async (evt) => {
+            evt.stopPropagation();
 
-          deleteBtn.addEventListener('click', async (e) => {
-            e.stopPropagation(); // prevent map click weirdness
-
-            console.log("Delete clicked for:", markerId);
+            const markerId = feature.properties._id;
+            if (!markerId) return;
 
             try {
-              const res = await fetch(`/markers/${markerId}`, {
-                method: 'DELETE'
-              });
-
-              console.log("DELETE status:", res.status);
-
+              const res = await fetch(`/markers/${markerId}`, { method: 'DELETE' });
               if (!res.ok) {
                 const err = await res.json();
                 alert(err.error || 'Delete failed');
                 return;
               }
 
-              // remove from GeoJSON source
-              const source = map.getSource('markers');
-              const currentData = source._data;
+              // ✅ Remove marker from frontend GeoJSON
+              markers.features = markers.features.filter(f => f.properties._id !== markerId);
+              map.getSource('markers').setData(markers);
 
-              const updatedFeatures = currentData.features.filter(
-                f => f.properties._id !== markerId
-              );
+              // ✅ Remove the popup immediately after successful delete
+              popup.remove();
 
-              source.setData({
-                type: 'FeatureCollection',
-                features: updatedFeatures
-              });
+              // Update the filter UI
+              buildAmenityFilterControls();
+              applyAmenityFilter();
 
-              // remove the popup from the map
-              popup.remove(); 
             } catch (err) {
               console.error('Delete failed:', err);
             }
           });
-
         }, 0);
       });
     });
