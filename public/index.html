@@ -4,20 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campus Map</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- UI teammate: Design and structure go here -->
-    <div id="app">
-        <header>
-            <h1>Campus Map</h1>
-        </header>
-        <main>
-            <div id="map"></div>
-        </main>
-    </div>
+    <!-- Sidebar (hidden by default) -->
+    <aside id="sidebar" class="sidebar">
+        <button id="closeSidebar" class="close-btn" title="Close">&times;</button>
+        <div class="sidebar-content">
+            <h2>Select Amenity Categories</h2>
+            <form id="amenity-filter-form"></form>
+        </div>
+    </aside>
 
-    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js'></script>
-    <script src="js/map.js"></script>
+    <!-- Hamburger button -->
+    <button id="menuBtn" class="menu-btn" title="Menu">&#9776;</button>
+
+    <!-- Map container -->
+    <div id="map"></div>
+    <button id="add-current-location-btn" class="add-location-btn" title="Add amenity at my location" aria-label="Add amenity at my location">+</button>
+
+    <script src="/js/map.js" defer></script>
 </body>
 </html>
