@@ -15,7 +15,7 @@ const AMENITY_COLORS = {
   'Other': '#666666'
 };
 
-// map.js — safe "Logged in as" removal
+// map.js safe "Logged in as" removal
 const userInfoDiv = document.getElementById("userInfo");
 const user = JSON.parse(localStorage.getItem("user"));
 
@@ -34,10 +34,10 @@ async function initializeMap() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user) {
-    // User not logged in → redirect to login page
+    // User not logged in so redirect to login page
     window.location.href = "auth.html";
   } else {
-    // User is logged in → show their username
+    // User is logged in so show their username
     userInfoDiv.textContent = `Logged in as ${user.username}`;
   }
   try {
@@ -804,11 +804,11 @@ async function initializeMap() {
                 return;
               }
 
-              // ✅ Remove marker from frontend GeoJSON
+              // Remove marker from frontend GeoJSON
               markers.features = markers.features.filter(f => f.properties._id !== markerId);
               map.getSource('markers').setData(markers);
 
-              // ✅ Remove the popup immediately after successful delete
+              // Remove the popup immediately after successful delete
               popup.remove();
 
               // Update the filter UI
