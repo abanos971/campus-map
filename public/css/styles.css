@@ -111,7 +111,7 @@ body {
   border: none;
   font-size: 32px;
   cursor: pointer;
-  color: #333;
+  color: #33333373;
   padding: 0;
   width: 40px;
   height: 40px;
@@ -169,7 +169,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(16, 24, 40, 0.45);
+  background: rgba(24, 40, 16, 0.45);
   backdrop-filter: blur(2px);
 }
 
@@ -209,6 +209,13 @@ body {
   background: #ffffff;
 }
 
+.mapboxgl-popup-close-button {
+  font-size: 24px;   /* makes the X bigger */
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
 .marker-name-input:focus {
   outline: 2px solid #dc2500;
   border-color: #880000;
@@ -241,7 +248,7 @@ body {
 
 .marker-name-cancel {
   background: #e5e7eb;
-  color: #111827;
+  color: #112711;
 }
 
 .marker-name-save {
