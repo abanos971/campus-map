@@ -763,7 +763,7 @@ async function initializeMap() {
               });
 
               // remove the popup from the map
-              popup.remove();
+              popup.remove(); 
             } catch (err) {
               console.error('Delete failed:', err);
             }
