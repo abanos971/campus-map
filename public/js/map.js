@@ -2,7 +2,7 @@
 const AMENITY_COLORS = {
   'Gender-Inclusive Restroom': '#f57c00',
   'Compost Bin': '#1aa105',
-  'Recyling Bin': '#0931e3',
+  'Recycling Bin': '#0931e3',
   'Water Fountain': '#2ac6ff',
   'Handicapped Restroom': '#f57c00',
   'Elevator': '#ae00ff',
