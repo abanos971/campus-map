@@ -122,6 +122,7 @@ async function initializeMap() {
       type: 'FeatureCollection',
       features: []
     };
+    const currentUserId = user && user._id ? String(user._id) : null;
 
     // Wait for map to load before adding sources and layers
     map.on('load', async() => {
@@ -145,6 +146,19 @@ async function initializeMap() {
           .replaceAll('"', '&quot;')
           .replaceAll("'", '&#39;')
       );
+
+      const updateFeatureUpvotes = (markerId, nextUpvotes, upvotedByUserIds) => {
+        const feature = markers.features.find((f) => f.properties && f.properties._id === markerId);
+        if (!feature) {
+          return;
+        }
+
+        feature.properties.upvotes = Number(nextUpvotes) || 0;
+        if (Array.isArray(upvotedByUserIds)) {
+          feature.properties.upvotedByUserIds = upvotedByUserIds;
+        }
+        map.getSource('markers').setData(markers);
+      };
 
       const filterForm = document.getElementById('amenity-filter-form');
 
@@ -465,6 +479,8 @@ async function initializeMap() {
               indoorOutdoor: savedMarker.indoorOutdoor || 'outdoor',
               floor: savedMarker.floor || '',
               locationDescription: savedMarker.locationDescription || '',
+              upvotes: Number(savedMarker.upvotes) || 0,
+              upvotedByUserIds: Array.isArray(savedMarker.upvotedByUserIds) ? savedMarker.upvotedByUserIds : [],
               _id: savedMarker._id // 🔑 Must match Mongo _id
             }
           });
@@ -605,6 +621,8 @@ async function initializeMap() {
               indoorOutdoor: marker.indoorOutdoor,
               floor: marker.floor,
               locationDescription: marker.locationDescription,
+              upvotes: Number(marker.upvotes) || 0,
+              upvotedByUserIds: Array.isArray(marker.upvotedByUserIds) ? marker.upvotedByUserIds : [],
               _id: marker._id
             }
           });
@@ -696,21 +714,86 @@ async function initializeMap() {
         <div><strong>Area:</strong> ${escapeHtml(feature.properties.indoorOutdoor)}</div>
         <div><strong>Floor:</strong> ${escapeHtml(feature.properties.floor || 'Not specified')}</div>
         <div><strong>Description:</strong> ${escapeHtml(feature.properties.locationDescription || 'Not provided')}</div>
-        <br>
-        <button class="delete-btn">Delete</button>
+        <div class="marker-vote-row">
+          <button class="upvote-btn" aria-label="Upvote marker">⬆️ <span class="upvote-count">${Number(feature.properties.upvotes) || 0}</span></button>
+        </div>
+        <div class="marker-popup-actions">
+          <button class="delete-btn">Delete</button>
+        </div>
       </div>
     `)
           .addTo(map);
 
-        // Attach delete button listener
+        // Attach popup button listeners
         setTimeout(() => {
+          const markerId = feature.properties._id;
+          const upvotedByUserIds = Array.isArray(feature.properties.upvotedByUserIds)
+            ? feature.properties.upvotedByUserIds
+            : [];
+          const upvoteBtn = popup.getElement().querySelector('.upvote-btn');
+          const upvoteCountEl = popup.getElement().querySelector('.upvote-count');
           const deleteBtn = popup.getElement().querySelector('.delete-btn');
+          const hasVoted = markerId && currentUserId && upvotedByUserIds.includes(currentUserId);
+
+          if (upvoteBtn) {
+            if (hasVoted) {
+              upvoteBtn.disabled = true;
+              upvoteBtn.classList.add('is-confirmed');
+            }
+
+            upvoteBtn.addEventListener('click', async (evt) => {
+              evt.stopPropagation();
+
+              if (!markerId || upvoteBtn.disabled) {
+                return;
+              }
+              if (!currentUserId) {
+                alert('Please sign in to upvote markers.');
+                return;
+              }
+
+              try {
+                upvoteBtn.disabled = true;
+
+                const res = await fetch(`/markers/${markerId}/upvote`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId: currentUserId })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                  if (res.status === 409) {
+                    if (upvoteCountEl) {
+                      upvoteCountEl.textContent = String(Number(data.upvotes) || 0);
+                    }
+                    updateFeatureUpvotes(markerId, data.upvotes, data.upvotedByUserIds);
+                    upvoteBtn.classList.add('is-confirmed');
+                  } else {
+                    upvoteBtn.disabled = false;
+                    alert(data.error || 'Upvote failed');
+                  }
+                  return;
+                }
+
+                const nextUpvotes = Number(data.upvotes) || 0;
+                if (upvoteCountEl) {
+                  upvoteCountEl.textContent = String(nextUpvotes);
+                }
+
+                updateFeatureUpvotes(markerId, nextUpvotes, data.upvotedByUserIds);
+                upvoteBtn.classList.add('is-confirmed');
+              } catch (err) {
+                console.error('Upvote failed:', err);
+                upvoteBtn.disabled = false;
+              }
+            });
+          }
+
           if (!deleteBtn) return;
 
           deleteBtn.addEventListener('click', async (evt) => {
             evt.stopPropagation();
-
-            const markerId = feature.properties._id;
             if (!markerId) return;
 
             try {

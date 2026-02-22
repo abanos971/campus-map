@@ -257,6 +257,48 @@ body {
   gap: 6px;
 }
 
+.marker-vote-row {
+  margin-top: 4px;
+  display: flex;
+}
+
+.marker-popup-actions {
+  margin-top: 4px;
+}
+
+.upvote-btn,
+.delete-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upvote-btn {
+  background: #dcfce7;
+  color: #166534;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upvote-btn:disabled {
+  opacity: 0.8;
+  cursor: default;
+}
+
+.upvote-btn.is-confirmed {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.delete-btn {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 @media (max-width: 640px) {
   .marker-name-overlay {
     align-items: flex-end;

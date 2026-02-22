@@ -45,6 +45,8 @@ module.exports = (db) => {
         locationDescription: locationDescription || '',
         lat: Number(lat),
         lng: Number(lng),
+        upvotes: 0,
+        upvotedByUserIds: [],
         createdAt: new Date()
       };
 
@@ -56,6 +58,62 @@ module.exports = (db) => {
     } catch (err) {
       console.error('POST /markers error:', err);
       res.status(500).json({ error: 'Failed to save marker' });
+    }
+  });
+
+  // POST upvote a marker
+  router.post('/:id/upvote', async (req, res) => {
+    try {
+      const { ObjectId } = require('mongodb');
+      const id = req.params.id;
+      const userId = String(req.body?.userId || '').trim();
+
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+
+      const updateResult = await collection.updateOne(
+        {
+          _id: new ObjectId(id),
+          upvotedByUserIds: { $ne: userId }
+        },
+        {
+          $inc: { upvotes: 1 },
+          $addToSet: { upvotedByUserIds: userId }
+        }
+      );
+
+      let updated;
+      if (updateResult.modifiedCount === 0) {
+        updated = await collection.findOne({ _id: new ObjectId(id) });
+        if (!updated) {
+          return res.status(404).json({ error: 'Marker not found' });
+        }
+
+        const alreadyUpvoted = Array.isArray(updated.upvotedByUserIds) && updated.upvotedByUserIds.includes(userId);
+        if (alreadyUpvoted) {
+          return res.status(409).json({
+            error: 'User already upvoted this marker',
+            _id: updated._id.toString(),
+            upvotes: Number(updated.upvotes) || 0,
+            upvotedByUserIds: updated.upvotedByUserIds || []
+          });
+        }
+      } else {
+        updated = await collection.findOne({ _id: new ObjectId(id) });
+      }
+
+      if (!updated) {
+        return res.status(404).json({ error: 'Marker not found' });
+      }
+
+      res.json({
+        ...updated,
+        _id: updated._id ? updated._id.toString() : undefined
+      });
+    } catch (err) {
+      console.error('POST /markers/:id/upvote error:', err);
+      res.status(500).json({ error: 'Failed to upvote marker' });
     }
   });
 
