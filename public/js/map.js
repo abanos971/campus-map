@@ -304,8 +304,8 @@ async function initializeMap() {
           const indoorOutdoorSelect = document.createElement('select');
           indoorOutdoorSelect.className = 'marker-name-input';
           [
-            { value: 'indoor', text: 'Indoor' },
-            { value: 'outdoor', text: 'Outdoor' }
+            { value: 'Indoor', text: 'Indoor' },
+            { value: 'Outdoor', text: 'Outdoor' }
           ].forEach((entry) => {
             const option = document.createElement('option');
             option.value = entry.value;
@@ -355,7 +355,7 @@ async function initializeMap() {
           actions.appendChild(saveButton);
 
           const updateFloorVisibility = () => {
-            floorWrap.style.display = indoorOutdoorSelect.value === 'indoor' ? 'block' : 'none';
+            floorWrap.style.display = indoorOutdoorSelect.value === 'Indoor' ? 'block' : 'none';
           };
 
           updateFloorVisibility();
@@ -384,7 +384,7 @@ async function initializeMap() {
           saveButton.addEventListener('click', () => closeDialog({
             amenityType: amenityTypeSelect.value,
             indoorOutdoor: indoorOutdoorSelect.value,
-            floor: indoorOutdoorSelect.value === 'indoor' ? floorInput.value.trim() : '',
+            floor: indoorOutdoorSelect.value === 'Indoor' ? floorInput.value.trim() : '',
             locationDescription: descriptionInput.value.trim()
           }));
 
@@ -400,7 +400,7 @@ async function initializeMap() {
               closeDialog({
                 amenityType: amenityTypeSelect.value,
                 indoorOutdoor: indoorOutdoorSelect.value,
-                floor: indoorOutdoorSelect.value === 'indoor' ? floorInput.value.trim() : '',
+                floor: indoorOutdoorSelect.value === 'Indoor' ? floorInput.value.trim() : '',
                 locationDescription: descriptionInput.value.trim()
               });
             } else if (event.key === 'Escape') {
@@ -429,7 +429,7 @@ async function initializeMap() {
           properties: {
             title: markerData.amenityType || 'Untitled',
             amenityType: markerData.amenityType || 'Untitled',
-            indoorOutdoor: markerData.indoorOutdoor || 'outdoor',
+            indoorOutdoor: markerData.indoorOutdoor || 'Outdoor',
             floor: markerData.floor || '',
             locationDescription: markerData.locationDescription || '',
             id: Date.now() // Unique ID for the marker
@@ -630,7 +630,7 @@ async function initializeMap() {
         }
 
         const properties = feature.properties || {};
-        const floorInfo = properties.indoorOutdoor === 'indoor'
+        const floorInfo = properties.indoorOutdoor === 'Indoor'
           ? `<div><strong>Floor:</strong> ${escapeHtml(properties.floor || 'Not specified')}</div>`
           : '';
         const descriptionInfo = properties.locationDescription
