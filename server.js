@@ -29,6 +29,9 @@ async function start() {
     const markersRouter = require('./backend/markers')(db);
     app.use('/markers', markersRouter);
 
+    const authRouter = require('./backend/auth')(db);
+    app.use('/api', authRouter); // frontend will call /api/signup and /api/login
+
     // mapbox token endpoint used by frontend
     app.get('/api/config', (req, res) => {
       res.json({ mapboxToken: process.env.MAPBOX_TOKEN || '' });

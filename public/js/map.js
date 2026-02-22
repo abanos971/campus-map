@@ -15,8 +15,31 @@ const AMENITY_COLORS = {
   'Other': '#666666'
 };
 
+// map.js — safe "Logged in as" removal
+const userInfoDiv = document.getElementById("userInfo");
+const user = JSON.parse(localStorage.getItem("user"));
+
+// If user is not logged in, redirect to login
+if (!user) {
+  window.location.href = "auth.html";
+}
+
+// Do NOT set any text for userInfoDiv
+// userInfoDiv exists for JS stability, but stays hidden
+
 // Fetch Mapbox token from server
 async function initializeMap() {
+  // === Show logged-in user info and enforce login ===
+  const userInfoDiv = document.getElementById("userInfo");
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) {
+    // User not logged in → redirect to login page
+    window.location.href = "auth.html";
+  } else {
+    // User is logged in → show their username
+    userInfoDiv.textContent = `Logged in as ${user.username}`;
+  }
   try {
     const DEFAULT_CENTER = [-72.5314, 42.3866];
     const DEFAULT_ZOOM = 15;
@@ -748,21 +771,22 @@ document.getElementById('map').addEventListener('click', function() {
   document.getElementById('sidebar').classList.remove('open');
 });
 
-// Login / Logout button behavior
+// Login / Logout button behavior (use user object primarily, token as fallback)
 const loginBtn = document.getElementById("loginBtn");
-
 if (loginBtn) {
-  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token"); // fallback if needed
 
-  if (token) {
-    loginBtn.textContent = "Logout";
-
+  if (user || token) {
+    // Prefer showing username if available
+    loginBtn.textContent = user?.username ? `Logout (${user.username})` : "Logout";
     loginBtn.addEventListener("click", () => {
+      localStorage.removeItem("user");
       localStorage.removeItem("token");
       location.reload();
     });
-
   } else {
+    loginBtn.textContent = "Sign In";
     loginBtn.addEventListener("click", () => {
       window.location.href = "/auth.html";
     });

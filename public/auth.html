@@ -1,47 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Login / Signup</title>
-<link rel="stylesheet" href="css/auth.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login / Signup</title>
+  <link rel="stylesheet" href="css/auth.css" />
 </head>
+
 <body>
+  <button id="backBtn" class="back-btn">← Back to Map</button>
 
-<button id="backBtn" class="back-btn">← Back to Map</button>
+  <div class="container">
+    <div class="tabs">
+      <button id="loginTab" class="active" type="button">Login</button>
+      <button id="signupTab" type="button">Sign Up</button>
+    </div>
 
+    <!-- LOGIN FORM (we keep it a form element for semantics but do NOT use native submit) -->
+    <form id="loginForm" class="form active" onsubmit="return false;" novalidate>
+      <h2>Login</h2>
+      <input type="email" id="loginEmail" placeholder="Email" required autocomplete="username" />
+      <input type="password" id="loginPassword" placeholder="Password" required autocomplete="current-password" />
+      <!-- IMPORTANT: button is type="button" so browser won't treat this as native submit -->
+      <button id="loginSubmit" type="button">Login</button>
+    </form>
 
-<div class="container">
+    <!-- SIGNUP FORM -->
+    <form id="signupForm" class="form" onsubmit="return false;" novalidate>
+      <h2>Create Account</h2>
+      <input type="text" id="signupUsername" placeholder="Username" required autocomplete="name" />
+      <input type="email" id="signupEmail" placeholder="Email" required autocomplete="email" />
+      <input type="password" id="signupPassword" placeholder="Password" required autocomplete="new-password" />
+      <!-- IMPORTANT: button is type="button" -->
+      <button id="signupSubmit" type="button">Sign Up</button>
+    </form>
 
-  <div class="tabs">
-    <button id="loginTab" class="active">Login</button>
-    <button id="signupTab">Sign Up</button>
+    <p id="message" aria-live="polite"></p>
   </div>
 
-  <!-- LOGIN FORM -->
-  <form id="loginForm" class="form active">
-    <h2>Login</h2>
-
-    <input type="email" id="loginEmail" placeholder="Email" required>
-    <input type="password" id="loginPassword" placeholder="Password" required>
-
-    <button type="submit">Login</button>
-  </form>
-
-  <!-- SIGNUP FORM -->
-  <form id="signupForm" class="form">
-    <h2>Create Account</h2>
-
-    <input type="text" id="signupUsername" placeholder="Username" required>
-    <input type="email" id="signupEmail" placeholder="Email" required>
-    <input type="password" id="signupPassword" placeholder="Password" required>
-
-    <button type="submit">Sign Up</button>
-  </form>
-
-  <p id="message"></p>
-
-</div>
-
-<script src="js/auth.js"></script>
+  <!-- load the client script -->
+  <script src="/js/auth.js"></script>
 </body>
+
 </html>

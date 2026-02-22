@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,12 @@
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
-    <!-- Sidebar (hidden by default) -->
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <!-- Hidden sidebar (JS depends on this) -->
     <aside id="sidebar" class="sidebar">
         <button id="closeSidebar" class="close-btn" title="Close">&times;</button>
         <div class="sidebar-content">
@@ -18,16 +23,21 @@
         </div>
     </aside>
 
-    <!-- Hamburger button -->
+    <!-- Hidden userInfo div (JS references it) -->
+    <div id="userInfo" style="display:none;"></div>
+
+    <!-- Hamburger menu -->
     <button id="menuBtn" class="menu-btn" title="Menu">&#9776;</button>
 
-    <!-- NEW: Login button -->
+    <!-- Login / Logout button -->
     <button id="loginBtn" class="login-btn">Sign In</button>
 
-    <!-- Map container -->
-    <div id="map"></div>
-    <button id="add-current-location-btn" class="add-location-btn" title="Add amenity at my location" aria-label="Add amenity at my location">+</button>
+    <!-- Add current location button -->
+    <button id="add-current-location-btn" class="add-location-btn" title="Add amenity at my location"
+        aria-label="Add amenity at my location">+</button>
 
+    <!-- Map JS -->
     <script src="/js/map.js" defer></script>
 </body>
+
 </html>
